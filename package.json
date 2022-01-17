@@ -1,0 +1,19 @@
+{
+  "name": "scoutsystemapi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "devStart": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/bolt": "^3.8.1",
+    "express": "^4.17.2"
+  },
+  "devDependencies": {
+    "dotenv": "^12.0.4",
+    "nodemon": "^2.0.15"
+  }
+}
