@@ -13,7 +13,8 @@
     "@slack/web-api": "^6.6.0",
     "express": "^4.17.2",
     "googleapis": "^92.0.0",
-    "mjs": "^1.0.0"
+    "mjs": "^1.0.0",
+    "nvm": "^0.0.4"
   },
   "devDependencies": {
     "dotenv": "^12.0.4",

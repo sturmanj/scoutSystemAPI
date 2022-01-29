@@ -15,7 +15,7 @@ const { google } = require("googleapis")
 
 api.get("/", async (req, res) => {
     const auth = new google.auth.GoogleAuth({
-        keyFile: "keys.json",
+        keyFile: "slackAPIkeys.json",
         scopes: "https://www.googleapis.com/auth/spreadsheets",
     })
     const client = await auth.getClient()
@@ -53,4 +53,20 @@ api.get("/", async (req, res) => {
 
     res.send(data)
 })
+/*
+const { google } = require("googleapis")
+const auth = new google.auth.GoogleAuth({
+    keyFile: "slackAPIkeys.json",
+    scopes: "https://www.googleapis.com/auth/spreadsheets",
+})
+const client = await auth.getClient()
+export default client;
 
+const { App } = require('@slack/bolt');
+const slackApp = new App({
+  token: process.env.SLACK_BOT_TOKEN,
+  socketMode: true,
+  appToken: process.env.SLACK_APP_TOKEN
+});
+module.exports = { slackApp }
+*/

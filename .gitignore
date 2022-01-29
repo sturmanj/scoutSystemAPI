@@ -1,5 +1,5 @@
 .env
 node_modules
 route.rest
-keys.json
+slackAPIkeys.json
 test.json

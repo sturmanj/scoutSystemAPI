@@ -2,11 +2,11 @@ require('dotenv').config()
 const { WebClient } = require('@slack/web-api');
 const client = new WebClient(process.env.SLACK_BOT_TOKEN);
 
-async function getVals() {
+async function getVals(num) {
     let userlist = await client.users.list()
     let users = userlist.members
     
-    console.log(users[2].profile.image_512)
+    console.log(users[num].name)
 }
 
-getVals()
+getVals(9)
