@@ -1,3 +1,6 @@
+const noteView = require("../notesModal.json")
+const homeView = require("../homeBase.json")
+
 //API
 const express = require('express')
 const router = express.Router();
@@ -79,80 +82,7 @@ slackApp.command('/note', async ({ ack, body, client }) => {
     // Pass a valid trigger_id within 3 seconds of receiving it
     trigger_id: body.trigger_id,
     // View payload
-    view: {
-      "title": {
-        "type": "plain_text",
-        "text": "Note Form",
-        "emoji": true
-      },
-      "submit": {
-        "type": "plain_text",
-        "text": "Submit",
-        "emoji": true
-      },
-      "type": "modal",
-      "close": {
-        "type": "plain_text",
-        "text": "Cancel",
-        "emoji": true
-      },
-      "blocks": [
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": "*Team Number:*"
-          },
-          "accessory": {
-            "type": "static_select",
-            "placeholder": {
-              "type": "plain_text",
-              "text": "Select a team",
-              "emoji": true
-            },
-            "options": [
-              {
-                "text": {
-                  "type": "plain_text",
-                  "text": "1540",
-                  "emoji": true
-                },
-                "value": "value-0"
-              },
-              {
-                "text": {
-                  "type": "plain_text",
-                  "text": "2019",
-                  "emoji": true
-                },
-                "value": "value-1"
-              },
-              {
-                "text": {
-                  "type": "plain_text",
-                  "text": "1550",
-                  "emoji": true
-                },
-                "value": "value-2"
-              }
-            ],
-            "action_id": "static_select-action"
-          }
-        },
-        {
-          "type": "input",
-          "element": {
-            "type": "plain_text_input",
-            "action_id": "plain_text_input-action"
-          },
-          "label": {
-            "type": "plain_text",
-            "text": "Notes:",
-            "emoji": true
-          }
-        }
-      ]
-    }
+    view: noteView
   });
 });
 
@@ -163,78 +93,7 @@ slackApp.event("app_home_opened", async ({ payload, client }) => {
   const userId = payload.user;
   await client.views.publish({
     user_id: userId,
-    view: {
-      "type": "home",
-      "blocks": [
-        {
-          "type": "header",
-          "text": {
-            "type": "plain_text",
-            "text": "Wilsonville Scouting",
-            "emoji": true
-          }
-        },
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": "Match 1 \nScouts: 3/8"
-          },
-          "accessory": {
-            "type": "button",
-            "text": {
-              "type": "plain_text",
-              "text": "Join",
-              "emoji": true
-            },
-            "style": "primary",
-            "value": "click_me_123",
-            "action_id": "match1"
-          }
-        },
-        {
-          "type": "divider"
-        },
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": "Match 2 \nScouts: 8/8"
-          },
-          "accessory": {
-            "type": "button",
-            "text": {
-              "type": "plain_text",
-              "text": "Full",
-              "emoji": true
-            },
-            "value": "click_me_123",
-            "action_id": "match2"
-          }
-        },
-        {
-          "type": "divider"
-        },
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": "Match 3 \nScouts: 6/8"
-          },
-          "accessory": {
-            "type": "button",
-            "text": {
-              "type": "plain_text",
-              "text": "Leave",
-              "emoji": true
-            },
-            "style": "danger",
-            "value": "click_me_123",
-            "action_id": "match3"
-          }
-        }
-      ]
-    }
+    view: homeView
   });
 });
 

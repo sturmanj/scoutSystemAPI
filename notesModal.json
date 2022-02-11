@@ -1,0 +1,74 @@
+{
+    "title": {
+      "type": "plain_text",
+      "text": "Note Form",
+      "emoji": true
+    },
+    "submit": {
+      "type": "plain_text",
+      "text": "Submit",
+      "emoji": true
+    },
+    "type": "modal",
+    "close": {
+      "type": "plain_text",
+      "text": "Cancel",
+      "emoji": true
+    },
+    "blocks": [
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": "*Team Number:*"
+        },
+        "accessory": {
+          "type": "static_select",
+          "placeholder": {
+            "type": "plain_text",
+            "text": "Select a team",
+            "emoji": true
+          },
+          "options": [
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "1540",
+                "emoji": true
+              },
+              "value": "value-0"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "2019",
+                "emoji": true
+              },
+              "value": "value-1"
+            },
+            {
+              "text": {
+                "type": "plain_text",
+                "text": "1550",
+                "emoji": true
+              },
+              "value": "value-2"
+            }
+          ],
+          "action_id": "static_select-action"
+        }
+      },
+      {
+        "type": "input",
+        "element": {
+          "type": "plain_text_input",
+          "action_id": "plain_text_input-action"
+        },
+        "label": {
+          "type": "plain_text",
+          "text": "Notes:",
+          "emoji": true
+        }
+      }
+    ]
+  }
