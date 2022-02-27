@@ -1,7 +1,15 @@
 const noteView = require("../notesModal.json")
 const homeView = require("../homeBase.json")
+const users = require("../users.json")
+
+let scouts = []
+const idToName = new Map()
+for (let i = 0; i < users.length; i++) {
+  idToName.set(users[i].id, users[i].real_name);
+}
 
 //API
+const fetch = require('node-fetch')
 const express = require('express')
 const router = express.Router();
 require('dotenv').config()
@@ -13,6 +21,7 @@ router.post('/:text', (req, res) => {
   res.sendStatus(200)
 })
 
+/*
 //Sheets
 const { google } = require("googleapis")
 
@@ -35,16 +44,15 @@ async function insertData(cell, text) {
         },
     })
 }
-
+*/
 
 //SLACKBOT
-
 const { App } = require('@slack/bolt');
 
 const slackApp = new App({
   token: process.env.SLACK_BOT_TOKEN,
   socketMode: true,
-  appToken: process.env.SLACK_APP_TOKEN 
+  appToken: process.env.SLACK_APP_TOKEN
 });
 
 slackApp.command('/ping', async ({ ack, respond }) => {
@@ -55,7 +63,7 @@ slackApp.command('/ping', async ({ ack, respond }) => {
 
 slackApp.command('/webnote', async ({ command, ack, }) => {
   await ack();
-  sendMessage(command.user_id, "http://localhost:8080?scout=" + command.user_id + 
+  sendMessage(command.user_id, "http://localhost:8080?scout=" + command.user_id +
               "&eventId=" + process.env.EVENT)
 });
 
@@ -73,7 +81,70 @@ async function sendMessage(channel, text) {
   });
 }
 
+const scoutManagers = ["U02HZTW2PAN"]
 
+slackApp.command('/alert', async ({ command, ack, respond }) => {
+  let message = ''
+  let scoutTeams = []
+  await ack();
+
+  if (!scoutManagers.includes(command.user_id)) {
+    await respond('You do not have permission to run this command.');
+  }
+  else {
+    roundNumber = parseInt(command.text);
+    await fetch("http://localhost:5000/roundQueue", {
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+    },
+    "body": JSON.stringify({roundNumber: roundNumber, eventId: 1})
+    })
+    .then(res => res.json())
+    .then(json => {
+      scoutTeams = json
+    })
+    .catch(err => message = err.message);
+  }
+  for (const element of scoutTeams) {
+    message += "\n" + (element.scoutId, "http://localhost:8080/?scout=" + element.scoutId + "&eventId=1&matchNum=" + roundNumber + "&teamNum=" + element.teamNumber)
+    //sendMessage(element.scoutId, "http://localhost:8080/?scout=" + element.scoutId + "&eventId=1&matchNum=" + roundNumber + "&teamNum=" + element.teamNumber)
+  }
+  await respond(message);
+});
+
+slackApp.command('/whosqueued', async ({ command, ack, respond }) => {
+  let message = ''
+  let scoutTeams = []
+  await ack();
+
+  if (!scoutManagers.includes(command.user_id)) {
+    await respond('You do not have permission to run this command.');
+  }
+  else {
+    roundNumber = parseInt(command.text);
+    await fetch("http://localhost:5000/roundQueue", {
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+    },
+    "body": JSON.stringify({roundNumber: roundNumber, eventId: 1})
+    })
+    .then(res => res.json())
+    .then(json => {
+      scoutTeams = json
+    })
+    .catch(err => message = err.message);
+
+    for (const element of scoutTeams) {
+      message += "\n" + (idToName.get(element.scoutId))
+    }
+    await respond(message);
+  }
+});
+
+
+/*
 slackApp.command('/note', async ({ ack, body, client }) => {
   // Acknowledge the command request
   await ack();
@@ -85,9 +156,10 @@ slackApp.command('/note', async ({ ack, body, client }) => {
     view: noteView
   });
 });
+*/
 
 
-
+/*
 // Listen to the app_home_opened Events API event to hear when a user opens your app from the sidebar
 slackApp.event("app_home_opened", async ({ payload, client }) => {
   const userId = payload.user;
@@ -111,3 +183,4 @@ slackApp.action('match3', async ({ ack }) => {
   await ack();
   insertData("B4", "name")
 });
+*/
