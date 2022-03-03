@@ -1,70 +1,26 @@
-const noteView = require("../notesModal.json")
-const homeView = require("../homeBase.json")
 const users = require("../users.json")
-
-let scouts = []
-const idToName = new Map()
-for (let i = 0; i < users.length; i++) {
-  idToName.set(users[i].id, users[i].real_name);
-}
-
-//API
+const matchView = require("../matchView.js")
+const { App } = require('@slack/bolt');
 const fetch = require('node-fetch')
 const express = require('express')
 const router = express.Router();
 require('dotenv').config()
 
-module.exports = router
+//This should be imported from the database
+let matchList = [["","","","","","","",""], ["","","",""], ["","","","",""], [], ["","","","","","",""], [], [], [], [], []]
+const scoutManagers = ["U02HZTW2PAN"]
 
-router.post('/:text', (req, res) => {
-  sendMessage("ima-testin-me-fine-bots-here", req.params.text)
-  res.sendStatus(200)
-})
-
-/*
-//Sheets
-const { google } = require("googleapis")
-
-const spreadsheetId = "1AH1xf7_ScLn-0HVFvmpZcKElpfh6UOsB-KyPD1IFsUg"
-const auth = new google.auth.GoogleAuth({
-    keyFile: "slackAPIkeys.json",
-    scopes: "https://www.googleapis.com/auth/spreadsheets",
-})
-
-async function insertData(cell, text) {
-    const client = await auth.getClient()
-    const googleSheets = google.sheets({ version: "v4", auth: client })
-    await googleSheets.spreadsheets.values.update({
-        auth,
-        spreadsheetId,
-        range: cell,
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-            values: [[text]]
-        },
-    })
+const idToName = new Map()
+for (let i = 0; i < users.length; i++) {
+  idToName.set(users[i].id, users[i].real_name);
 }
-*/
 
-//SLACKBOT
-const { App } = require('@slack/bolt');
 
+//Slack bot setup
 const slackApp = new App({
   token: process.env.SLACK_BOT_TOKEN,
   socketMode: true,
   appToken: process.env.SLACK_APP_TOKEN
-});
-
-slackApp.command('/ping', async ({ ack, respond }) => {
-  await ack();
-
-  await respond('pong');
-});
-
-slackApp.command('/webnote', async ({ command, ack, }) => {
-  await ack();
-  sendMessage(command.user_id, "http://localhost:8080?scout=" + command.user_id +
-              "&eventId=" + process.env.EVENT)
 });
 
 (async () => {
@@ -72,17 +28,33 @@ slackApp.command('/webnote', async ({ command, ack, }) => {
   console.log('Slack Bot Started');
 })();
 
-//Send Message Command
-async function sendMessage(channel, text) {
-  slackApp.client.chat.postMessage({
-    token: process.env.SLACK_BOT_TOKEN,
-    channel: channel,
-    text: text
-  });
-}
 
-const scoutManagers = ["U02HZTW2PAN"]
 
+//API setup
+router.post('/:text', (req, res) => {
+  sendMessage("ima-testin-me-fine-bots-here", req.params.text)
+  res.sendStatus(200)
+})
+
+module.exports = router
+
+
+
+//Ping command to see if the server and bot are running
+slackApp.command('/ping', async ({ ack, respond }) => {
+  await ack();
+
+  await respond('pong');
+});
+
+//Command to open the notes form in a browser
+slackApp.command('/webnote', async ({ command, ack, }) => {
+  await ack();
+  sendMessage(command.user_id, "http://localhost:8080?scout=" + command.user_id +
+              "&eventId=" + process.env.EVENT)
+});
+
+//Command to alert scouts for the next match
 slackApp.command('/alert', async ({ command, ack, respond }) => {
   let message = ''
   let scoutTeams = []
@@ -113,6 +85,7 @@ slackApp.command('/alert', async ({ command, ack, respond }) => {
   await respond(message);
 });
 
+//Command to check who is queued
 slackApp.command('/whosqueued', async ({ command, ack, respond }) => {
   let message = ''
   let scoutTeams = []
@@ -137,50 +110,113 @@ slackApp.command('/whosqueued', async ({ command, ack, respond }) => {
     .catch(err => message = err.message);
 
     for (const element of scoutTeams) {
-      message += "\n" + (idToName.get(element.scoutId))
+      message += "\n" + (idToName.get(element.scoutId) + "  -->  " + element.teamNumber)
     }
     await respond(message);
   }
 });
 
 
-/*
-slackApp.command('/note', async ({ ack, body, client }) => {
-  // Acknowledge the command request
-  await ack();
 
-  await client.views.open({
-    // Pass a valid trigger_id within 3 seconds of receiving it
-    trigger_id: body.trigger_id,
-    // View payload
-    view: noteView
-  });
-});
-*/
-
-
-/*
-// Listen to the app_home_opened Events API event to hear when a user opens your app from the sidebar
+//Scouting sign up setup
 slackApp.event("app_home_opened", async ({ payload, client }) => {
   const userId = payload.user;
+
+  let blocks = [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Scouting Sign Up",
+        "emoji": true
+      }
+    },
+  ]
+
+  for (let i = 0; i < matchList.length; i++) {
+    blocks = blocks.concat(matchView(i, matchList[i], userId));
+  }
+
+  let view = {
+    type: 'home',
+    title: {
+      type: 'plain_text',
+      text: 'Scouting Sign Up'
+    },
+    blocks: JSON.stringify(blocks)
+  }
+
   await client.views.publish({
     user_id: userId,
-    view: homeView
+    view: view
   });
 });
 
-slackApp.action('match1', async ({ ack }) => {
+
+
+//Action listeners for the signup system
+slackApp.action('joinMatch', async ({ action, body, ack }) => {
   await ack();
-  insertData("B2", "name")
+  userId = body.user.id
+  currentMatchList = matchList[action.value]
+  currentMatchList.push(userId)
+  updateHome(userId)
 });
 
-slackApp.action('match2', async ({ ack }) => {
+slackApp.action('leaveMatch', async ({ action, body, ack }) => {
   await ack();
-  insertData("B3", "name")
+  userId = body.user.id
+  currentMatchList = matchList[action.value]
+  currentMatchList.splice(currentMatchList.indexOf("userId"), 1)
+  updateHome(userId)
 });
 
-slackApp.action('match3', async ({ ack }) => {
+slackApp.action('fullMatch', async ({ body, ack }) => {
   await ack();
-  insertData("B4", "name")
+  userId = body.user.id
+  updateHome(userId)
 });
-*/
+
+
+
+//Function to easily send messages
+async function sendMessage(channel, text) {
+  slackApp.client.chat.postMessage({
+    token: process.env.SLACK_BOT_TOKEN,
+    channel: channel,
+    text: text
+  });
+}
+
+//Function to easily update the home page
+const updateHome = async (userId) => {
+  let blocks = [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Scouting Sign Up",
+        "emoji": true
+      }
+    },
+  ]
+
+  for (let i = 0; i < matchList.length; i++) {
+    blocks = blocks.concat(matchView(i, matchList[i], userId));
+  }
+
+  let view = {
+    type: 'home',
+    title: {
+      type: 'plain_text',
+      text: 'Scouting Sign Up'
+    },
+    blocks: JSON.stringify(blocks)
+  }
+
+  await slackApp.client.views.publish({
+    token: process.env.SLACK_BOT_TOKEN,
+    user_id: userId,
+    view: view
+  });
+}
