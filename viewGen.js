@@ -1,5 +1,5 @@
 function matchView(matchNum, currentMatchList, userId) {
-  let newBlock
+  let newBlock;
 
   if (currentMatchList.includes(userId)) {
     newBlock = [
@@ -42,10 +42,8 @@ function matchView(matchNum, currentMatchList, userId) {
       {
         type: "divider",
       },
-    ]
-  }
-
-  else if (currentMatchList.length === 8) {
+    ];
+  } else if (currentMatchList.length === 8) {
     newBlock = [
       {
         type: "section",
@@ -61,16 +59,14 @@ function matchView(matchNum, currentMatchList, userId) {
             emoji: true,
           },
           value: `${matchNum}`,
-          action_id: "fullMatch"
+          action_id: "fullMatch",
         },
       },
       {
         type: "divider",
       },
     ];
-  }
-
-  else {
+  } else {
     newBlock = [
       {
         type: "section",
@@ -87,16 +83,99 @@ function matchView(matchNum, currentMatchList, userId) {
           },
           style: "primary",
           value: `${matchNum}`,
-          action_id: "joinMatch"
+          action_id: "joinMatch",
         },
       },
       {
         type: "divider",
       },
-    ]
+    ];
   }
 
-  return newBlock
+  return newBlock;
 }
 
-module.exports = matchView;
+function modalView() {
+  let modal = {
+    type: "modal",
+    callback_id: "note-modal",
+    title: {
+      type: "plain_text",
+      text: "Note Form",
+      emoji: true,
+    },
+    submit: {
+      type: "plain_text",
+      text: "Submit",
+      emoji: true,
+    },
+    type: "modal",
+    close: {
+      type: "plain_text",
+      text: "Cancel",
+      emoji: true,
+    },
+    blocks: [
+      {
+        type: "section",
+        block_id: "teamNum",
+        text: {
+          type: "mrkdwn",
+          text: "*Team Number:*",
+        },
+        accessory: {
+          type: "static_select",
+          placeholder: {
+            type: "plain_text",
+            text: "Select a team",
+            emoji: true,
+          },
+          options: [
+            {
+              text: {
+                type: "plain_text",
+                text: "1540",
+                emoji: true,
+              },
+              value: "value-0",
+            },
+            {
+              text: {
+                type: "plain_text",
+                text: "2019",
+                emoji: true,
+              },
+              value: "value-1",
+            },
+            {
+              text: {
+                type: "plain_text",
+                text: "1550",
+                emoji: true,
+              },
+              value: "value-2",
+            },
+          ],
+          action_id: "static_select-action",
+        },
+      },
+      {
+        type: "input",
+        block_id: "notes",
+        element: {
+          type: "plain_text_input",
+          action_id: "plain_text_input-action",
+        },
+        label: {
+          type: "plain_text",
+          text: "Notes:",
+          emoji: true,
+        },
+      },
+    ],
+  };
+
+  return modal;
+}
+
+module.exports = { matchView, modalView }
